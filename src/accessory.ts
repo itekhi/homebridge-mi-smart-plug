@@ -41,47 +41,41 @@ class MiSmartPlugAccessory implements AccessoryPlugin {
 
 		this.switchService = new hap.Service.Switch(this.name);
 		this.switchService.getCharacteristic(hap.Characteristic.On)
-			.on(CharacteristicEventTypes.GET, this.handleGet)
-			.on(CharacteristicEventTypes.SET, this.handleSet);
+			.onGet(this.handleGet.bind(this))
+			.onSet(this.handleSet.bind(this));
 
 		this.informationService = new hap.Service.AccessoryInformation()
 			.setCharacteristic(hap.Characteristic.Manufacturer, config.manufacturer || "Xiaomi")
-			.setCharacteristic(hap.Characteristic.Model, config.model || "Mi Smart Plug");
+			.setCharacteristic(hap.Characteristic.Model, config.model || "ZNCZ05CM");
 
 		log.info('Initialization finished');
 	}
 
-	handleGet = (callback: CharacteristicGetCallback) => {
+	handleGet = async (): Promise<any> => {
 		if (!this.validity) {
 			this.validate(this.ip, this.token);
-			callback(HAPStatus.SERVICE_COMMUNICATION_FAILURE, false);
 			return;
 		}
-		this.device.get()
+
+		return await this.device.get()
 			.then((power) => {
 				this.log.info(`Current state ${power ? "ON" : "OFF"}`);
-				callback(HAPStatus.SUCCESS, power);
 			})
-			.catch((e: Error) => {
-				callback(HAPStatus.OPERATION_TIMED_OUT, false);
-				this.log.error(e.message);
-			});
 	}
 
-	handleSet = (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+	handleSet = async (value: CharacteristicValue): Promise<any> => {
 		if (!this.validity) {
 			this.validate(this.ip, this.token);
-			callback(HAPStatus.SERVICE_COMMUNICATION_FAILURE);
 			return;
 		}
-		this.device.set(value as boolean)
+
+		return await this.device.set(value as boolean)
 			.then((result) => {
 				this.log.info(`Switch state was set to: ${result}`);
-				callback(HAPStatus.SUCCESS);
 			})
 			.catch((e: Error) => {
-				callback(HAPStatus.OPERATION_TIMED_OUT);
 				this.log.error(e.message);
+				throw e;
 			});
 	}
 
