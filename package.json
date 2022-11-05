@@ -9,7 +9,7 @@
     "prepublish": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "itekhi <itekhi@yandex.ru>",
+  "author": "Paul Woods <itekhi@yandex.ru>",
   "engines": {
     "homebridge": ">=1.0.0"
   },
