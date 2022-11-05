@@ -60,6 +60,7 @@ class MiSmartPlugAccessory implements AccessoryPlugin {
 		return await this.device.get()
 			.then((power) => {
 				this.log.info(`Current state ${power ? "ON" : "OFF"}`);
+				return power;
 			})
 	}
 
