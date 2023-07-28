@@ -2,18 +2,14 @@ import {
 	AccessoryConfig,
 	AccessoryPlugin,
 	API,
-	CharacteristicEventTypes,
-	CharacteristicGetCallback,
-	CharacteristicSetCallback,
 	CharacteristicValue,
 	HAP,
-	HAPStatus,
 	Logging,
 	Service
 } from "homebridge";
 import isIP from 'validator/lib/isIP';
 import isMD5 from 'validator/lib/isMD5';
-import {MiPlug} from "./mi-plug";
+import { MiPlug } from "./mi-plug";
 
 let hap: HAP;
 
@@ -57,11 +53,13 @@ class MiSmartPlugAccessory implements AccessoryPlugin {
 			return;
 		}
 
-		return await this.device.get()
-			.then((power) => {
-				this.log.info(`Current state ${power ? "ON" : "OFF"}`);
-				return power;
-			})
+		try {
+			const power = await this.device.get()
+			this.log.info(`Current state ${power ? "ON" : "OFF"}`);
+			return power
+		} catch (err) {
+			this.log.error(`Caught error while getting device state: ${err}`);
+		}
 	}
 
 	handleSet = async (value: CharacteristicValue): Promise<any> => {
@@ -70,14 +68,13 @@ class MiSmartPlugAccessory implements AccessoryPlugin {
 			return;
 		}
 
-		return await this.device.set(value as boolean)
-			.then((result) => {
-				this.log.info(`Switch state was set to: ${result}`);
-			})
-			.catch((e: Error) => {
-				this.log.error(e.message);
-				throw e;
-			});
+		try {
+			const result = await this.device.set(value as boolean);
+			this.log.info(`Switch state was set to: ${result}`);
+			return result
+		} catch (err) {
+			this.log.error(`Caught error while setting device state: ${err}`);
+		}
 	}
 
 	validate(ip: string, token: string): boolean {
@@ -94,5 +91,4 @@ class MiSmartPlugAccessory implements AccessoryPlugin {
 			this.switchService,
 		];
 	}
-
 }
